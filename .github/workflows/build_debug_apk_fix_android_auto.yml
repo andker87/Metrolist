@@ -29,13 +29,28 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential cmake ninja-build python3 perl git
 
+      - name: Install Android SDK components (NDK + CMake)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --licenses
+          "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" \
+            "ndk;27.0.12077973" \
+            "cmake;3.22.1"
+          echo "ANDROID_NDK_HOME=${ANDROID_SDK_ROOT}/ndk/27.0.12077973" >> $GITHUB_ENV
+          echo "ANDROID_NDK_ROOT=${ANDROID_SDK_ROOT}/ndk/27.0.12077973" >> $GITHUB_ENV
+
       - name: Build FFTW prebuilt (required by vibrafp)
         shell: bash
         run: |
           set -euxo pipefail
           chmod +x app/src/main/cpp/vibrafp/third_party/build-fftw-android.sh
-          app/src/main/cpp/vibrafp/third_party/build-fftw-android.sh
-          ls -la app/src/main/cpp/vibrafp/third_party/fftw-android || true
+          pushd app/src/main/cpp/vibrafp/third_party
+          ./build-fftw-android.sh
+          popd
+          echo "=== Search fftw-android outputs ==="
+          find app/src/main/cpp/vibrafp -maxdepth 4 -type d -name "fftw-android" -print || true
+          find app/src/main/cpp/vibrafp -maxdepth 6 -type f -name "*.a" | head -n 50 || true
 
       - name: Build Universal GMS Debug APK
         run: ./gradlew :app:assembleUniversalGmsDebug --no-daemon --stacktrace
