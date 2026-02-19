@@ -1,0 +1,35 @@
+name: Build Debug APK
+
+on:
+  push:
+    branches:
+      - fix/android-auto-discovery
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Remove persistent debug keystore (CI)
+        run: rm -f app/persistent-debug.keystore
+
+      - name: Build GMS debug APK (headless)
+        run: ./gradlew :app:assembleGmsDebug --no-daemon --stacktrace
+        env:
+          GRADLE_OPTS: "-Djava.awt.headless=true -Dsun.java2d.noddraw=true -Dkotlin.daemon.jvm.options=-Djava.awt.headless=true"
+          JAVA_TOOL_OPTIONS: "-Djava.awt.headless=true"
+
+      - name: Upload APK(s)
+        uses: actions/upload-artifact@v4
+        with:
+          name: metrolist-apks
+          path: app/build/outputs/apk/**/*.apk
