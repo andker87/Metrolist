@@ -10,20 +10,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repo (with submodules + LFS)
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          lfs: true
 
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: 17
 
-      - name: Build debug APK
-        run: ./gradlew assembleDebug
+      - name: Build Universal GMS Debug APK
+        run: ./gradlew :app:assembleUniversalGmsDebug --no-daemon --stacktrace
+        env:
+          GRADLE_OPTS: "-Djava.awt.headless=true -Dsun.java2d.noddraw=true -Dkotlin.daemon.jvm.options=-Djava.awt.headless=true"
+          JAVA_TOOL_OPTIONS: "-Djava.awt.headless=true"
 
-      - name: Upload APK
+      - name: Upload APK(s)
         uses: actions/upload-artifact@v4
         with:
-          name: metrolist-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: metrolist-apks
+          path: app/build/outputs/apk/**/*.apk
