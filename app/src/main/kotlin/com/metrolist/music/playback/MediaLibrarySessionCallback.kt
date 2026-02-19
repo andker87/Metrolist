@@ -107,13 +107,20 @@ constructor(
         return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
     }
 
-    @Deprecated("Deprecated in MediaLibrarySession.Callback")
-    override fun onPlaybackResumption(
-        mediaSession: MediaSession,
-        controller: MediaSession.ControllerInfo
-    ): ListenableFuture<MediaItemsWithStartPosition> {
-        return SettableFuture.create<MediaItemsWithStartPosition>()
-    }
+@Deprecated("Deprecated in MediaLibrarySession.Callback")
+override fun onPlaybackResumption(
+    mediaSession: MediaSession,
+    controller: MediaSession.ControllerInfo
+): ListenableFuture<MediaItemsWithStartPosition> {
+    // IMPORTANT: never return an uncompleted Future (it can stall the host)
+    return Futures.immediateFuture(
+        MediaItemsWithStartPosition(
+            /* mediaItems = */ emptyList(),
+            /* startIndex = */ 0,
+            /* startPositionMs = */ C.TIME_UNSET
+        )
+    )
+}
 
     override fun onGetLibraryRoot(
         session: MediaLibrarySession,
@@ -129,7 +136,7 @@ constructor(
                         MediaMetadata
                             .Builder()
                             .setIsPlayable(false)
-                            .setIsBrowsable(false)
+                            .setIsBrowsable(true)
                             .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
                             .build(),
                     ).build(),
