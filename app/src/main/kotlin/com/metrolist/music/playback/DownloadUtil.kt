@@ -91,7 +91,8 @@ constructor(
                 return@Factory dataSpec
             }
 
-            songUrlCache[mediaId]?.takeIf { it.second < System.currentTimeMillis() }?.let {
+            // Use cached URL only if it has not expired.
+            songUrlCache[mediaId]?.takeIf { it.second > System.currentTimeMillis() }?.let {
                 return@Factory dataSpec.withUri(it.first.toUri())
             }
 
@@ -147,7 +148,8 @@ constructor(
                 "${it}&range=0-${format.contentLength ?: 10000000}"
             }
 
-            songUrlCache[mediaId] = streamUrl to playbackData.streamExpiresInSeconds * 1000L
+            // Store absolute expiry time (epoch millis).
+            songUrlCache[mediaId] = streamUrl to (System.currentTimeMillis() + playbackData.streamExpiresInSeconds * 1000L)
             dataSpec.withUri(streamUrl.toUri())
         }
 
