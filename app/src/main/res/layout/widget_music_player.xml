@@ -56,7 +56,7 @@
                 android:layout_marginTop="2dp" />
         </LinearLayout>
 
-        <!-- Middle Row: Interactive Elements -->
+        <!-- Middle Row: Controls -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -65,19 +65,35 @@
 
             <!-- Like Button -->
             <FrameLayout
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:background="@drawable/widget_like_button_bg">
 
                 <ImageButton
                     android:id="@+id/widget_like_button"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="12dp"
+                    android:padding="10dp"
                     android:scaleType="fitCenter"
                     android:background="@android:color/transparent"
                     android:src="@drawable/ic_widget_heart_outline_nav"
                     android:contentDescription="@string/like" />
+            </FrameLayout>
+
+            <!-- Previous Button -->
+            <FrameLayout
+                android:id="@+id/widget_previous_container"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp">
+
+                <ImageView
+                    android:id="@+id/widget_previous"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_widget_skip_previous"
+                    android:contentDescription="@string/previous" />
             </FrameLayout>
 
             <!-- Play/Pause Container -->
@@ -86,7 +102,8 @@
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:background="@drawable/widget_play_pill_bg">
 
                 <ImageView
@@ -96,6 +113,21 @@
                     android:layout_gravity="center"
                     android:src="@drawable/ic_widget_play"
                     android:contentDescription="@string/play_pause" />
+            </FrameLayout>
+
+            <!-- Next Button -->
+            <FrameLayout
+                android:id="@+id/widget_next_container"
+                android:layout_width="40dp"
+                android:layout_height="40dp">
+
+                <ImageView
+                    android:id="@+id/widget_next"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_widget_skip_next"
+                    android:contentDescription="@string/next" />
             </FrameLayout>
 
         </LinearLayout>
