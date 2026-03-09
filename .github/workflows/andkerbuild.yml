@@ -7,6 +7,12 @@ on:
         description: 'Branch to build'
         required: true
         default: 'main'
+        type: choice
+        options:
+          - main
+          - feature/android-auto-improvements
+          - feature/widget-prev-next
+          - feature/widget-dynamic-colors
 
 permissions:
   contents: write
