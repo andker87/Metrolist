@@ -14,6 +14,7 @@ on:
           - feature/widget-prev-next
           - feature/widget-dynamic-colors
           - feature/aa-fix
+          - evo/aa
 
 permissions:
   contents: write
