@@ -13,8 +13,7 @@ on:
           - feature/android-auto-improvements
           - feature/widget-prev-next
           - feature/widget-dynamic-colors
-          - feature/aa-fix
-          - evo/aa
+          - android-auto-devs
 
 permissions:
   contents: write
