@@ -38,6 +38,7 @@ import com.metrolist.music.ui.component.Material3SettingsItem
 import com.metrolist.music.ui.component.ReleaseNotesCard
 import com.metrolist.music.ui.utils.backToMain
 import com.metrolist.music.utils.Updater
+import androidx.compose.runtime.remember
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +49,16 @@ fun SettingsScreen(
     val uriHandler = LocalUriHandler.current
     val context = LocalContext.current
     val isAndroid12OrLater = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val hasAndroidAuto = remember {
+        try {
+            context.packageManager.getPackageInfo(
+                "com.google.android.projection.gearhead", 0
+            )
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
 
     Column(
         Modifier
@@ -74,9 +85,9 @@ fun SettingsScreen(
                 )
             )
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // Player & Content Section (moved up and combined with content)
         Material3SettingsGroup(
             title = stringResource(R.string.settings_section_player_content),
@@ -98,8 +109,24 @@ fun SettingsScreen(
                 )
             )
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Android Auto Section — only shown if Android Auto is installed
+        if (hasAndroidAuto) {
+            Material3SettingsGroup(
+                title = "Android Auto",
+                items = listOf(
+                    Material3SettingsItem(
+                        icon = painterResource(R.drawable.ic_android_auto),
+                        title = { Text(stringResource(R.string.android_auto)) },
+                        onClick = { navController.navigate("settings/android_auto") }
+                    )
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
         
         // Privacy & Security Section
         Material3SettingsGroup(
@@ -112,9 +139,9 @@ fun SettingsScreen(
                 )
             )
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // Storage & Data Section
         Material3SettingsGroup(
             title = stringResource(R.string.settings_section_storage),
@@ -131,9 +158,9 @@ fun SettingsScreen(
                 )
             )
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // System & About Section
         Material3SettingsGroup(
             title = stringResource(R.string.settings_section_system),
@@ -209,7 +236,7 @@ fun SettingsScreen(
                 if (BuildConfig.UPDATER_AVAILABLE && latestVersionName != BuildConfig.VERSION_NAME) {
                     val releaseInfo = Updater.getCachedLatestRelease()
                     val downloadUrl = releaseInfo?.let { Updater.getDownloadUrlForCurrentVariant(it) }
-                    
+
                     if (downloadUrl != null) {
                         add(
                             Material3SettingsItem(
@@ -234,12 +261,11 @@ fun SettingsScreen(
                 }
             }
         )
-        
-        if (BuildConfig.UPDATER_AVAILABLE && latestVersionName != BuildConfig.VERSION_NAME) {
+    if (BuildConfig.UPDATER_AVAILABLE && latestVersionName != BuildConfig.VERSION_NAME) {
             Spacer(modifier = Modifier.height(16.dp))
             ReleaseNotesCard()
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
     }
 

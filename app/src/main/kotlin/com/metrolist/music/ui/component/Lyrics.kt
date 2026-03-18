@@ -8,7 +8,6 @@ package com.metrolist.music.ui.component
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.content.res.Configuration
 import android.text.Layout
 import android.view.WindowManager
 import android.widget.Toast
@@ -90,7 +89,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -120,6 +118,7 @@ import com.metrolist.music.LocalListenTogetherManager
 import com.metrolist.music.LocalPlayerConnection
 import com.metrolist.music.R
 import com.metrolist.music.constants.AiProviderKey
+import com.metrolist.music.constants.AiSystemPromptKey
 import com.metrolist.music.constants.DarkModeKey
 import com.metrolist.music.constants.DeeplApiKey
 import com.metrolist.music.constants.DeeplFormalityKey
@@ -178,6 +177,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.seconds
 
+/**
+ * A composable function that displays lyrics for the currently playing song.
+ *
+ * @param sliderPositionProvider Provides the current playback position in milliseconds.
+ * @param modifier Modifier to be applied to the layout.
+ * @param showLyrics Whether lyrics should be displayed.
+ */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedBoxWithConstraintsScope", "StringFormatInvalid")
 @Composable
@@ -216,6 +222,7 @@ fun Lyrics(
     val translateLanguage by rememberPreference(TranslateLanguageKey, "en")
     val translateMode by rememberPreference(TranslateModeKey, "Literal")
     val deeplFormality by rememberPreference(DeeplFormalityKey, "default")
+    val aiSystemPrompt by rememberPreference(AiSystemPromptKey, "")
 
     val scope = rememberCoroutineScope()
 
@@ -236,14 +243,15 @@ fun Lyrics(
             if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
         }
 
-    val decodedList = if (romanizeLyricsList.value.isEmpty()) {
-        defaultList
-    } else {
-        romanizeLyricsList.value.split(",").map { entry ->
-            val (lang, checked) = entry.split(":")
-            Pair(lang, checked.toBoolean())
+    val decodedList =
+        if (romanizeLyricsList.value.isEmpty()) {
+            defaultList
+        } else {
+            romanizeLyricsList.value.split(",").map { entry ->
+                val (lang, checked) = entry.split(":")
+                Pair(lang, checked.toBoolean())
+            }
         }
-    }
 
     val enabledLanguages = decodedList.filter { (_, checked) -> checked }.map { (lang, _) -> lang }
 
@@ -255,28 +263,62 @@ fun Lyrics(
                 val parsedLines = parseLyrics(lyrics)
 
                 parsedLines
-                     .map { entry ->
-                        val newEntry = LyricsEntry(entry.time, entry.text, entry.words, agent = entry.agent, isBackground = entry.isBackground)
+                    .map { entry ->
+                        val newEntry =
+                            LyricsEntry(entry.time, entry.text, entry.words, agent = entry.agent, isBackground = entry.isBackground)
 
                         scope.launch {
                             val text = if (romanizeCyrillicByLine) entry.text else lyrics
                             var value: String? = ""
 
                             when {
-                                "Japanese" in enabledLanguages && isJapanese(text) && !isChinese(text) -> value = romanizeJapanese(entry.text)
-                                "Korean" in enabledLanguages && isKorean(text) -> value = romanizeKorean(entry.text)
-                                "Chinese" in enabledLanguages && isChinese(text) -> value = romanizeChinese(entry.text)
-                                "Hindi" in enabledLanguages && isHindi(text) -> value = romanizeHindi(entry.text)
-                                "Ukrainian" in enabledLanguages && isUkrainian(text) -> value = romanizeCyrillic(entry.text)
-                                "Russian" in enabledLanguages && isRussian(text) -> value = romanizeCyrillic(entry.text)
-                                "Serbian" in enabledLanguages && isSerbian(text) -> value = romanizeCyrillic(entry.text)
-                                "Bulgarian" in enabledLanguages && isBulgarian(text) -> value = romanizeCyrillic(entry.text)
-                                "Belarusian" in enabledLanguages && isBelarusian(text) -> value = romanizeCyrillic(entry.text)
-                                "Kyrgyz" in enabledLanguages && isKyrgyz(text) -> value = romanizeCyrillic(entry.text)
-                                "Macedonian" in enabledLanguages && isMacedonian(text) -> value = romanizeCyrillic(entry.text)
+                                "Japanese" in enabledLanguages && isJapanese(text) && !isChinese(text) -> {
+                                    value =
+                                        romanizeJapanese(entry.text)
+                                }
+
+                                "Korean" in enabledLanguages && isKorean(text) -> {
+                                    value = romanizeKorean(entry.text)
+                                }
+
+                                "Chinese" in enabledLanguages && isChinese(text) -> {
+                                    value = romanizeChinese(entry.text)
+                                }
+
+                                "Hindi" in enabledLanguages && isHindi(text) -> {
+                                    value = romanizeHindi(entry.text)
+                                }
+
+                                "Ukrainian" in enabledLanguages && isUkrainian(text) -> {
+                                    value = romanizeCyrillic(entry.text)
+                                }
+
+                                "Russian" in enabledLanguages && isRussian(text) -> {
+                                    value = romanizeCyrillic(entry.text)
+                                }
+
+                                "Serbian" in enabledLanguages && isSerbian(text) -> {
+                                    value = romanizeCyrillic(entry.text)
+                                }
+
+                                "Bulgarian" in enabledLanguages && isBulgarian(text) -> {
+                                    value = romanizeCyrillic(entry.text)
+                                }
+
+                                "Belarusian" in enabledLanguages && isBelarusian(text) -> {
+                                    value = romanizeCyrillic(entry.text)
+                                }
+
+                                "Kyrgyz" in enabledLanguages && isKyrgyz(text) -> {
+                                    value = romanizeCyrillic(entry.text)
+                                }
+
+                                "Macedonian" in enabledLanguages && isMacedonian(text) -> {
+                                    value = romanizeCyrillic(entry.text)
+                                }
                             }
 
-                           newEntry.romanizedTextFlow.value = value
+                            newEntry.romanizedTextFlow.value = value
                         }
 
                         newEntry
@@ -363,6 +405,7 @@ fun Lyrics(
                     useStreaming = true,
                     songId = currentSong?.id ?: "",
                     database = database,
+                    systemPrompt = aiSystemPrompt,
                 )
             } else if (effectiveApiKey.isBlank()) {
                 Toast.makeText(context, aiApiKeyRequiredStr, Toast.LENGTH_SHORT).show()
@@ -389,7 +432,6 @@ fun Lyrics(
                 Color.White
             }
         }
-    val textColor = expressiveAccent
 
     var currentLineIndex by remember {
         mutableIntStateOf(-1)
@@ -535,6 +577,12 @@ fun Lyrics(
         }
     }
 
+    /**
+     * Smoothly scrolls the lyrics list to center the item at [targetIndex].
+     *
+     * @param targetIndex The index of the lyrics line to scroll to.
+     * @param duration The duration of the scroll animation in milliseconds.
+     */
     suspend fun performSmoothPageScroll(
         targetIndex: Int,
         duration: Int = 1500,
@@ -1637,8 +1685,10 @@ fun Lyrics(
             // Removed the more button from bottom - it's now in the top header
         }
 
-        Box(
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp),
+        AnimatedVisibility(
+            visible = isSelectionModeActive,
+            enter = slideInVertically { it } + fadeIn(),
+            exit = slideOutVertically { it } + fadeOut(),
         ) {
             AnimatedVisibility(
                 visible = !isAutoScrollEnabled && isSynced && !isSelectionModeActive,
